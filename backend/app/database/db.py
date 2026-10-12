@@ -6,15 +6,31 @@ from sqlalchemy import (
     Column, DateTime, Float, ForeignKey, Integer, String, create_engine,
 )
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.pool import NullPool
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./agrovolt.db")
+IS_VERCEL = os.getenv("VERCEL") == "1"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if IS_VERCEL and not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL must be configured for Vercel; SQLite is local-only.")
+
+DATABASE_URL = DATABASE_URL or "sqlite:///./agrovolt.db"
+
+# Supabase's pooler may provide the legacy postgres:// scheme.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql://" + DATABASE_URL.removeprefix("postgres://")
 
 # Use check_same_thread only for SQLite
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
+engine_options = {"connect_args": connect_args}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+# Vercel functions are serverless; let Supavisor manage transaction pooling.
+if IS_VERCEL and DATABASE_URL.startswith("postgresql://"):
+    engine_options["poolclass"] = NullPool
+
+engine = create_engine(DATABASE_URL, **engine_options)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
