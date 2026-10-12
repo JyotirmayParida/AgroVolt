@@ -1,0 +1,43 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases and SQLite
+*.db
+*.sqlite
+*.sqlite3
+backend/agrovolt.db
+
+# Environment and sensitive keys
+.env
+.env.*
+!.env.example
+*.local
+
+# Node and Frontend build outputs
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ML models: exclude large keras/weights, but KEEP trained models_saved/*.pkl
+backend/models_saved/*.h5
+backend/models_saved/*.keras
